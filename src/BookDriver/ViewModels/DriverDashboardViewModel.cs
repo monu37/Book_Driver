@@ -6,17 +6,17 @@ public class DriverDashboardViewModel
 {
     public string FullName { get; set; } = string.Empty;
 
-    [Required, StringLength(100)]
-    [Display(Name = "Vehicle model")]
-    public string VehicleModel { get; set; } = string.Empty;
+    [Required, StringLength(30)]
+    [Display(Name = "Driving license number")]
+    public string LicenseNumber { get; set; } = string.Empty;
 
-    [Required, StringLength(20)]
-    [Display(Name = "Vehicle plate number")]
-    public string VehiclePlateNumber { get; set; } = string.Empty;
+    [Range(0, 60)]
+    [Display(Name = "Years of experience")]
+    public int YearsOfExperience { get; set; }
 
-    [Range(1, 500)]
-    [Display(Name = "Rate per km (₹)")]
-    public decimal RatePerKm { get; set; }
+    [Range(1, 2000)]
+    [Display(Name = "Rate per hour (₹)")]
+    public decimal RatePerHour { get; set; }
 
     public bool IsAvailable { get; set; }
     public double Latitude { get; set; }

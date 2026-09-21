@@ -40,10 +40,10 @@ public class BookingsController : Controller
         {
             DriverProfileId = driver.Id,
             DriverName = driver.User!.FullName,
-            VehicleModel = driver.VehicleModel,
-            RatePerKm = driver.RatePerKm,
+            YearsOfExperience = driver.YearsOfExperience,
+            RatePerHour = driver.RatePerHour,
             DistanceKm = distanceKm,
-            EstimatedFare = Math.Round(driver.RatePerKm * (decimal)Math.Max(distanceKm, 2), 2),
+            EstimatedFare = Math.Round(driver.RatePerHour * 2, 2),
             PickupLatitude = lat,
             PickupLongitude = lng,
         };
@@ -68,8 +68,8 @@ public class BookingsController : Controller
         if (!ModelState.IsValid)
         {
             vm.DriverName = driver.User!.FullName;
-            vm.VehicleModel = driver.VehicleModel;
-            vm.RatePerKm = driver.RatePerKm;
+            vm.YearsOfExperience = driver.YearsOfExperience;
+            vm.RatePerHour = driver.RatePerHour;
             return View(vm);
         }
 
@@ -80,12 +80,16 @@ public class BookingsController : Controller
         {
             CustomerId = userId,
             DriverProfileId = driver.Id,
+            CarModel = vm.CarModel,
+            CarNumber = vm.CarNumber,
             PickupAddress = vm.PickupAddress,
             PickupLatitude = vm.PickupLatitude,
             PickupLongitude = vm.PickupLongitude,
             DropoffAddress = vm.DropoffAddress,
+            TripStartAt = vm.TripStartAt,
+            EstimatedHours = vm.EstimatedHours,
             DistanceKm = distanceKm,
-            EstimatedFare = Math.Round(driver.RatePerKm * (decimal)Math.Max(distanceKm, 2), 2),
+            EstimatedFare = Math.Round(driver.RatePerHour * (decimal)vm.EstimatedHours, 2),
             Status = BookingStatus.Pending,
         };
 
@@ -110,9 +114,12 @@ public class BookingsController : Controller
             {
                 Id = b.Id,
                 OtherPartyName = b.DriverProfile!.User!.FullName,
-                VehicleModel = b.DriverProfile.VehicleModel,
+                CarModel = b.CarModel,
+                CarNumber = b.CarNumber,
                 PickupAddress = b.PickupAddress,
                 DropoffAddress = b.DropoffAddress,
+                TripStartAt = b.TripStartAt,
+                EstimatedHours = b.EstimatedHours,
                 Status = b.Status,
                 DistanceKm = b.DistanceKm,
                 EstimatedFare = b.EstimatedFare,
@@ -160,9 +167,12 @@ public class BookingsController : Controller
             {
                 Id = b.Id,
                 OtherPartyName = b.Customer!.FullName,
-                VehicleModel = string.Empty,
+                CarModel = b.CarModel,
+                CarNumber = b.CarNumber,
                 PickupAddress = b.PickupAddress,
                 DropoffAddress = b.DropoffAddress,
+                TripStartAt = b.TripStartAt,
+                EstimatedHours = b.EstimatedHours,
                 Status = b.Status,
                 DistanceKm = b.DistanceKm,
                 EstimatedFare = b.EstimatedFare,

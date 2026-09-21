@@ -8,9 +8,9 @@
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">@Model.DriverName</h5>
-        <p class="card-text mb-1">@Model.VehicleModel</p>
-        <p class="card-text mb-1">₹@Model.RatePerKm.ToString("0.##") / km &middot; @Model.DistanceKm.ToString("0.0") km from pickup point</p>
-        <p class="card-text">Estimated fare: <strong>₹@Model.EstimatedFare.ToString("0.##")</strong> <span class="text-muted">(approximate, based on distance to pickup)</span></p>
+        <p class="card-text mb-1">@Model.YearsOfExperience yrs experience &middot; @Model.DistanceKm.ToString("0.0") km from pickup point</p>
+        <p class="card-text mb-1">₹@Model.RatePerHour.ToString("0.##") / hour</p>
+        <p class="card-text">Estimated fare: <strong>₹<span id="fareEstimate">@Model.EstimatedFare.ToString("0.##")</span></strong> <span class="text-muted">(rate &times; hours booked)</span></p>
     </div>
 </div>
 
@@ -20,8 +20,21 @@
     <input type="hidden" asp-for="PickupLatitude" />
     <input type="hidden" asp-for="PickupLongitude" />
     <input type="hidden" asp-for="DriverName" />
-    <input type="hidden" asp-for="VehicleModel" />
-    <input type="hidden" asp-for="RatePerKm" />
+    <input type="hidden" asp-for="YearsOfExperience" />
+    <input type="hidden" asp-for="RatePerHour" id="ratePerHour" />
+
+    <div class="row">
+        <div class="mb-3 col-md-6">
+            <label asp-for="CarModel" class="form-label"></label>
+            <input asp-for="CarModel" class="form-control" placeholder="e.g. Honda City" />
+            <span asp-validation-for="CarModel" class="text-danger"></span>
+        </div>
+        <div class="mb-3 col-md-6">
+            <label asp-for="CarNumber" class="form-label"></label>
+            <input asp-for="CarNumber" class="form-control" placeholder="e.g. DL3CAB1234" />
+            <span asp-validation-for="CarNumber" class="text-danger"></span>
+        </div>
+    </div>
 
     <div class="mb-3">
         <label asp-for="PickupAddress" class="form-label"></label>
@@ -35,10 +48,32 @@
         <span asp-validation-for="DropoffAddress" class="text-danger"></span>
     </div>
 
+    <div class="row">
+        <div class="mb-3 col-md-6">
+            <label asp-for="TripStartAt" class="form-label"></label>
+            <input asp-for="TripStartAt" class="form-control" type="datetime-local" />
+            <span asp-validation-for="TripStartAt" class="text-danger"></span>
+        </div>
+        <div class="mb-3 col-md-6">
+            <label asp-for="EstimatedHours" class="form-label"></label>
+            <input asp-for="EstimatedHours" id="estimatedHours" class="form-control" type="number" min="1" max="24" step="1" />
+            <span asp-validation-for="EstimatedHours" class="text-danger"></span>
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary">Confirm booking</button>
     <a class="btn btn-outline-secondary" asp-controller="Drivers" asp-action="Nearby" asp-route-lat="@Model.PickupLatitude" asp-route-lng="@Model.PickupLongitude">Back</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const rate = parseFloat(document.getElementById('ratePerHour').value) || 0;
+        const hoursInput = document.getElementById('estimatedHours');
+        const fareEl = document.getElementById('fareEstimate');
+        hoursInput.addEventListener('input', function () {
+            const hours = parseFloat(hoursInput.value) || 0;
+            fareEl.textContent = (rate * hours).toFixed(2);
+        });
+    </script>
 }

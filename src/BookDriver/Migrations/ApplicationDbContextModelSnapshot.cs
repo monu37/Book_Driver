@@ -91,6 +91,16 @@ namespace BookDriver.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CarModel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CarNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
@@ -112,6 +122,9 @@ namespace BookDriver.Migrations
                     b.Property<decimal>("EstimatedFare")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<double>("EstimatedHours")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("PickupAddress")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -131,6 +144,9 @@ namespace BookDriver.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("TripStartAt")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -153,28 +169,26 @@ namespace BookDriver.Migrations
                     b.Property<double>("Latitude")
                         .HasColumnType("REAL");
 
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("LocationUpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Longitude")
                         .HasColumnType("REAL");
 
-                    b.Property<decimal>("RatePerKm")
+                    b.Property<decimal>("RatePerHour")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("VehicleModel")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("VehiclePlateNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

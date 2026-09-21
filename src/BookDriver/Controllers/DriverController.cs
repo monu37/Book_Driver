@@ -34,9 +34,9 @@ public class DriverController : Controller
         var vm = new DriverDashboardViewModel
         {
             FullName = profile.User!.FullName,
-            VehicleModel = profile.VehicleModel,
-            VehiclePlateNumber = profile.VehiclePlateNumber,
-            RatePerKm = profile.RatePerKm,
+            LicenseNumber = profile.LicenseNumber,
+            YearsOfExperience = profile.YearsOfExperience,
+            RatePerHour = profile.RatePerHour,
             IsAvailable = profile.IsAvailable,
             Latitude = profile.Latitude,
             Longitude = profile.Longitude,
@@ -67,9 +67,9 @@ public class DriverController : Controller
             return View(nameof(Dashboard), vm);
         }
 
-        profile.VehicleModel = vm.VehicleModel.Trim();
-        profile.VehiclePlateNumber = vm.VehiclePlateNumber.Trim();
-        profile.RatePerKm = vm.RatePerKm;
+        profile.LicenseNumber = vm.LicenseNumber.Trim();
+        profile.YearsOfExperience = vm.YearsOfExperience;
+        profile.RatePerHour = vm.RatePerHour;
         await _db.SaveChangesAsync();
 
         TempData["Success"] = "Profile updated.";

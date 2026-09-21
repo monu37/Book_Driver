@@ -50,17 +50,17 @@ public class RegisterModel : PageModel
         [Display(Name = "I want to")]
         public string AccountType { get; set; } = "Customer";
 
-        [StringLength(100)]
-        [Display(Name = "Vehicle model")]
-        public string? VehicleModel { get; set; }
+        [StringLength(30)]
+        [Display(Name = "Driving license number")]
+        public string? LicenseNumber { get; set; }
 
-        [StringLength(20)]
-        [Display(Name = "Vehicle plate number")]
-        public string? VehiclePlateNumber { get; set; }
+        [Range(0, 60)]
+        [Display(Name = "Years of experience")]
+        public int YearsOfExperience { get; set; }
 
-        [Range(1, 500)]
-        [Display(Name = "Rate per km (₹)")]
-        public decimal RatePerKm { get; set; } = 15m;
+        [Range(1, 2000)]
+        [Display(Name = "Rate per hour (₹)")]
+        public decimal RatePerHour { get; set; } = 150m;
 
         [Required, StringLength(100, MinimumLength = 6)]
         [DataType(DataType.Password)]
@@ -83,13 +83,9 @@ public class RegisterModel : PageModel
 
         if (Input.AccountType == "Driver")
         {
-            if (string.IsNullOrWhiteSpace(Input.VehicleModel))
+            if (string.IsNullOrWhiteSpace(Input.LicenseNumber))
             {
-                ModelState.AddModelError("Input.VehicleModel", "Vehicle model is required for drivers.");
-            }
-            if (string.IsNullOrWhiteSpace(Input.VehiclePlateNumber))
-            {
-                ModelState.AddModelError("Input.VehiclePlateNumber", "Vehicle plate number is required for drivers.");
+                ModelState.AddModelError("Input.LicenseNumber", "Driving license number is required for drivers.");
             }
         }
 
@@ -120,9 +116,9 @@ public class RegisterModel : PageModel
                 _db.DriverProfiles.Add(new DriverProfile
                 {
                     UserId = user.Id,
-                    VehicleModel = Input.VehicleModel!.Trim(),
-                    VehiclePlateNumber = Input.VehiclePlateNumber!.Trim(),
-                    RatePerKm = Input.RatePerKm,
+                    LicenseNumber = Input.LicenseNumber!.Trim(),
+                    YearsOfExperience = Input.YearsOfExperience,
+                    RatePerHour = Input.RatePerHour,
                     IsAvailable = false,
                     Latitude = 0,
                     Longitude = 0,

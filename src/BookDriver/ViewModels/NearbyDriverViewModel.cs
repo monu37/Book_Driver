@@ -4,9 +4,9 @@ public class NearbyDriverViewModel
 {
     public int DriverProfileId { get; set; }
     public string FullName { get; set; } = string.Empty;
-    public string VehicleModel { get; set; } = string.Empty;
-    public string VehiclePlateNumber { get; set; } = string.Empty;
-    public decimal RatePerKm { get; set; }
+    public string LicenseNumber { get; set; } = string.Empty;
+    public int YearsOfExperience { get; set; }
+    public decimal RatePerHour { get; set; }
     public double DistanceKm { get; set; }
 }
 

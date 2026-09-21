@@ -13,6 +13,12 @@ public class Booking
     public int DriverProfileId { get; set; }
     public DriverProfile? DriverProfile { get; set; }
 
+    [Required, StringLength(100)]
+    public string CarModel { get; set; } = string.Empty;
+
+    [Required, StringLength(20)]
+    public string CarNumber { get; set; } = string.Empty;
+
     [Required, StringLength(250)]
     public string PickupAddress { get; set; } = string.Empty;
     public double PickupLatitude { get; set; }
@@ -20,6 +26,11 @@ public class Booking
 
     [Required, StringLength(250)]
     public string DropoffAddress { get; set; } = string.Empty;
+
+    public DateTime TripStartAt { get; set; } = DateTime.UtcNow;
+
+    [Range(1, 24)]
+    public double EstimatedHours { get; set; } = 2;
 
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 

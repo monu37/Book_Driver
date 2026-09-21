@@ -1,18 +1,24 @@
 # BookDriver
 
-Book a driver near you. An ASP.NET Core 8 MVC app with ASP.NET Core Identity
-auth, EF Core (SQLite), and browser-geolocation-based "drivers near me" search.
+Hire a chauffeur near you — a driver who drives *your own car*, not theirs.
+An ASP.NET Core 8 MVC app with ASP.NET Core Identity auth, EF Core (SQLite),
+and browser-geolocation-based "drivers near me" search.
 
 ## Features
 
-- Two account types on signup: **Customer** (books rides) and **Driver**
-  (registers a vehicle and accepts ride requests).
+- Two account types on signup: **Customer** (books a driver) and **Driver**
+  (registers a license and accepts ride requests — no vehicle needed, since
+  they drive the customer's car).
 - Customers grab their current location from the browser and see available
-  drivers within a chosen radius, sorted by distance (Haversine formula).
-- Customers book a driver with pickup/drop-off addresses; drivers see
-  incoming requests and can accept, reject, or mark a ride completed.
+  drivers within a chosen radius, sorted by distance (Haversine formula),
+  along with each driver's experience and hourly rate.
+- Booking a driver asks for the customer's own car (model + registration
+  number), pickup/drop-off addresses, when the trip starts, and how many
+  hours the driver is needed for; fare is estimated as rate/hour × hours.
+- Drivers see incoming requests and can accept, reject, or mark a ride
+  completed.
 - Drivers have a dashboard to go online/offline, push their live location,
-  and edit their vehicle and rate per km.
+  and edit their license, experience, and hourly rate.
 - Seed data creates 5 demo drivers around Delhi (`ravi.driver@bookdriver.demo`
   … `manoj.driver@bookdriver.demo`, password `Driver@123`) so the app has
   something to show immediately.
@@ -30,7 +36,8 @@ startup. Open the URL printed in the console (e.g. `http://localhost:5000`).
 
 ## Project layout
 
-- `Models/` — `ApplicationUser`, `DriverProfile`, `Booking`, `BookingStatus`.
+- `Models/` — `ApplicationUser`, `DriverProfile` (license, experience, rate/hour,
+  live location), `Booking` (customer's car, trip window, fare), `BookingStatus`.
 - `Data/ApplicationDbContext.cs` — EF Core Identity + domain DbContext.
 - `Controllers/DriversController.cs` — nearby-driver search.
 - `Controllers/BookingsController.cs` — create/accept/reject/complete/cancel.
@@ -45,5 +52,5 @@ startup. Open the URL printed in the console (e.g. `http://localhost:5000`).
 - No real email/SMS provider is configured; account confirmation is
   disabled and a no-op `IEmailSender` logs instead of sending mail — swap
   in a real provider before deploying this for real users.
-- Fares shown are a simple estimate (`rate per km × distance to pickup`)
-  for demo purposes, not a production pricing engine.
+- Fares shown are a simple estimate (`rate per hour × hours booked`) for
+  demo purposes, not a production pricing engine.

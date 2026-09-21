@@ -15,12 +15,14 @@ else
         <thead>
             <tr>
                 <th>Customer</th>
+                <th>Car</th>
                 <th>Pickup</th>
                 <th>Drop-off</th>
+                <th>Trip starts</th>
+                <th>Hours</th>
                 <th>Distance to pickup</th>
                 <th>Est. fare</th>
                 <th>Status</th>
-                <th>Requested</th>
                 <th></th>
             </tr>
         </thead>
@@ -29,12 +31,14 @@ else
             {
                 <tr>
                     <td>@b.OtherPartyName</td>
+                    <td>@b.CarModel <div class="text-muted small">@b.CarNumber</div></td>
                     <td>@b.PickupAddress</td>
                     <td>@b.DropoffAddress</td>
+                    <td>@b.TripStartAt.ToString("g")</td>
+                    <td>@b.EstimatedHours.ToString("0.#")</td>
                     <td>@b.DistanceKm.ToString("0.0") km</td>
                     <td>₹@b.EstimatedFare.ToString("0.##")</td>
                     <td><span class="badge bg-@StatusBadge(b.Status)">@b.Status</span></td>
-                    <td>@b.RequestedAt.ToLocalTime().ToString("g")</td>
                     <td class="text-nowrap">
                         @if (b.Status == BookDriver.Models.BookingStatus.Pending)
                         {

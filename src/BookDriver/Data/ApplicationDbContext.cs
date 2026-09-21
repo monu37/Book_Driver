@@ -41,7 +41,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<DriverProfile>()
-            .Property(d => d.RatePerKm)
+            .Property(d => d.RatePerHour)
             .HasColumnType("decimal(10,2)");
 
         builder.Entity<Booking>()

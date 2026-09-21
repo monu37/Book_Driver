@@ -38,9 +38,9 @@ public class DriversController : Controller
             {
                 DriverProfileId = d.Id,
                 FullName = d.User!.FullName,
-                VehicleModel = d.VehicleModel,
-                VehiclePlateNumber = d.VehiclePlateNumber,
-                RatePerKm = d.RatePerKm,
+                LicenseNumber = d.LicenseNumber,
+                YearsOfExperience = d.YearsOfExperience,
+                RatePerHour = d.RatePerHour,
                 DistanceKm = GeoService.DistanceKm(lat.Value, lng.Value, d.Latitude, d.Longitude),
             })
             .Where(d => d.DistanceKm <= radiusKm)

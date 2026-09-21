@@ -32,11 +32,11 @@ public static class DbSeeder
 
         var demoDrivers = new[]
         {
-            new { Name = "Ravi Kumar", Email = "ravi.driver@bookdriver.demo", Vehicle = "Maruti Suzuki Swift", Plate = "DL3CAB1234", Rate = 14m, Lat = 28.6139, Lng = 77.2090 },
-            new { Name = "Suresh Yadav", Email = "suresh.driver@bookdriver.demo", Vehicle = "Hyundai i20", Plate = "DL5CAF5678", Rate = 15m, Lat = 28.6304, Lng = 77.2177 },
-            new { Name = "Amit Sharma", Email = "amit.driver@bookdriver.demo", Vehicle = "Toyota Innova", Plate = "DL1CAK9012", Rate = 22m, Lat = 28.5921, Lng = 77.2290 },
-            new { Name = "Deepak Singh", Email = "deepak.driver@bookdriver.demo", Vehicle = "Honda City", Plate = "DL8CAM3456", Rate = 18m, Lat = 28.6448, Lng = 77.1925 },
-            new { Name = "Manoj Verma", Email = "manoj.driver@bookdriver.demo", Vehicle = "Tata Tiago", Plate = "DL2CAX7890", Rate = 13m, Lat = 28.5706, Lng = 77.3272 },
+            new { Name = "Ravi Kumar", Email = "ravi.driver@bookdriver.demo", License = "DL-0420110012345", Experience = 8, Rate = 150m, Lat = 28.6139, Lng = 77.2090 },
+            new { Name = "Suresh Yadav", Email = "suresh.driver@bookdriver.demo", License = "DL-0420110023456", Experience = 5, Rate = 130m, Lat = 28.6304, Lng = 77.2177 },
+            new { Name = "Amit Sharma", Email = "amit.driver@bookdriver.demo", License = "DL-0420110034567", Experience = 12, Rate = 180m, Lat = 28.5921, Lng = 77.2290 },
+            new { Name = "Deepak Singh", Email = "deepak.driver@bookdriver.demo", License = "DL-0420110045678", Experience = 3, Rate = 120m, Lat = 28.6448, Lng = 77.1925 },
+            new { Name = "Manoj Verma", Email = "manoj.driver@bookdriver.demo", License = "DL-0420110056789", Experience = 6, Rate = 140m, Lat = 28.5706, Lng = 77.3272 },
         };
 
         foreach (var d in demoDrivers)
@@ -61,9 +61,9 @@ public static class DbSeeder
             db.DriverProfiles.Add(new DriverProfile
             {
                 UserId = user.Id,
-                VehicleModel = d.Vehicle,
-                VehiclePlateNumber = d.Plate,
-                RatePerKm = d.Rate,
+                LicenseNumber = d.License,
+                YearsOfExperience = d.Experience,
+                RatePerHour = d.Rate,
                 IsAvailable = true,
                 Latitude = d.Lat,
                 Longitude = d.Lng,

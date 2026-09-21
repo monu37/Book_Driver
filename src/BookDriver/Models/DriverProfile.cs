@@ -10,14 +10,14 @@ public class DriverProfile
     public string UserId { get; set; } = string.Empty;
     public ApplicationUser? User { get; set; }
 
-    [Required, StringLength(100)]
-    public string VehicleModel { get; set; } = string.Empty;
+    [Required, StringLength(30)]
+    public string LicenseNumber { get; set; } = string.Empty;
 
-    [Required, StringLength(20)]
-    public string VehiclePlateNumber { get; set; } = string.Empty;
+    [Range(0, 60)]
+    public int YearsOfExperience { get; set; }
 
-    [Range(1, 500)]
-    public decimal RatePerKm { get; set; } = 15m;
+    [Range(1, 2000)]
+    public decimal RatePerHour { get; set; } = 150m;
 
     public bool IsAvailable { get; set; } = true;
 
