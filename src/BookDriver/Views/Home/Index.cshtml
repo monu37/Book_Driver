@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Book a driver near you";
+}
+
+<div class="p-5 mb-4 bg-light rounded-3 text-center">
+    <h1 class="display-5 fw-bold">Book a driver near you</h1>
+    <p class="col-lg-8 mx-auto fs-5">
+        Find available drivers close to your location, see their vehicle and rate, and book a ride in a few clicks.
+    </p>
+    <button id="findNearMe" class="btn btn-primary btn-lg">Find drivers near me</button>
+    <p id="homeGeoStatus" class="text-muted mt-2"></p>
+</div>
+
+<div class="row g-4 text-center">
+    <div class="col-md-4">
+        <h5>1. Share your location</h5>
+        <p>We use your device's location to find drivers close to you.</p>
+    </div>
+    <div class="col-md-4">
+        <h5>2. Pick a driver</h5>
+        <p>Compare distance, vehicle, and rate per km, then book.</p>
+    </div>
+    <div class="col-md-4">
+        <h5>3. Track your ride</h5>
+        <p>The driver accepts your request, and you can track status from "My bookings".</p>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<div class="text-center">
+    <p>New here? <a asp-area="Identity" asp-page="/Account/Register">Create an account</a> as a customer, or as a driver to start earning.</p>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('findNearMe').addEventListener('click', function () {
+            const status = document.getElementById('homeGeoStatus');
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation is not supported by your browser.';
+                window.location.href = '@Url.Action("Nearby", "Drivers")';
+                return;
+            }
+            status.textContent = 'Locating you…';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                const lat = pos.coords.latitude.toFixed(6);
+                const lng = pos.coords.longitude.toFixed(6);
+                window.location.href = '@Url.Action("Nearby", "Drivers")' + '?lat=' + lat + '&lng=' + lng;
+            }, function () {
+                status.textContent = 'Could not get your location. You can still search manually on the next page.';
+                setTimeout(function () {
+                    window.location.href = '@Url.Action("Nearby", "Drivers")';
+                }, 1500);
+            });
+        });
+    </script>
+}

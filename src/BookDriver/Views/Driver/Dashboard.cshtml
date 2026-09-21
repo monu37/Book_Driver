@@ -1,0 +1,119 @@
+@model BookDriver.ViewModels.DriverDashboardViewModel
+@{
+    ViewData["Title"] = "Driver dashboard";
+}
+
+<h1 class="mb-3">Welcome, @Model.FullName</h1>
+
+<form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Availability &amp; location</h5>
+
+                <p>
+                    Status:
+                    @if (Model.IsAvailable)
+                    {
+                        <span class="badge bg-success">Available for rides</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Offline</span>
+                    }
+                </p>
+
+                <form method="post" asp-action="ToggleAvailability" class="mb-3">
+                    <button class="btn @(Model.IsAvailable ? "btn-outline-secondary" : "btn-success")">
+                        @(Model.IsAvailable ? "Go offline" : "Go online")
+                    </button>
+                </form>
+
+                <p class="text-muted mb-1">Current location:</p>
+                <p id="currentLocation">@Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</p>
+                <p class="text-muted small">Last updated: @Model.LocationUpdatedAt.ToLocalTime().ToString("g")</p>
+
+                <button type="button" id="shareLocation" class="btn btn-primary">Share my current location</button>
+                <p id="locationStatus" class="text-muted mt-2"></p>
+
+                @if (Model.PendingRequestCount > 0)
+                {
+                    <div class="alert alert-warning mt-3 mb-0">
+                        You have @Model.PendingRequestCount pending ride request(s).
+                        <a asp-controller="Bookings" asp-action="Requests">View requests</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Vehicle &amp; rate</h5>
+                <form method="post" asp-action="UpdateProfile">
+                    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+                    <div class="mb-3">
+                        <label asp-for="VehicleModel" class="form-label"></label>
+                        <input asp-for="VehicleModel" class="form-control" />
+                        <span asp-validation-for="VehicleModel" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="VehiclePlateNumber" class="form-label"></label>
+                        <input asp-for="VehiclePlateNumber" class="form-control" />
+                        <span asp-validation-for="VehiclePlateNumber" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RatePerKm" class="form-label"></label>
+                        <input asp-for="RatePerKm" class="form-control" type="number" step="0.5" />
+                        <span asp-validation-for="RatePerKm" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('shareLocation').addEventListener('click', function () {
+            const status = document.getElementById('locationStatus');
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation is not supported by your browser.';
+                return;
+            }
+            status.textContent = 'Locating you…';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                fetch('@Url.Action("UpdateLocation", "Driver")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `lat=${lat}&lng=${lng}`
+                }).then(function (res) {
+                    if (res.ok) {
+                        document.getElementById('currentLocation').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                        status.textContent = 'Location updated.';
+                    } else {
+                        status.textContent = 'Could not update location.';
+                    }
+                });
+            }, function () {
+                status.textContent = 'Could not get your location. Please allow location access.';
+            });
+        });
+    </script>
+}

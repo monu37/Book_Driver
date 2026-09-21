@@ -1,0 +1,44 @@
+@model BookDriver.ViewModels.CreateBookingViewModel
+@{
+    ViewData["Title"] = "Confirm booking";
+}
+
+<h1 class="mb-3">@ViewData["Title"]</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">@Model.DriverName</h5>
+        <p class="card-text mb-1">@Model.VehicleModel</p>
+        <p class="card-text mb-1">₹@Model.RatePerKm.ToString("0.##") / km &middot; @Model.DistanceKm.ToString("0.0") km from pickup point</p>
+        <p class="card-text">Estimated fare: <strong>₹@Model.EstimatedFare.ToString("0.##")</strong> <span class="text-muted">(approximate, based on distance to pickup)</span></p>
+    </div>
+</div>
+
+<form method="post" asp-action="Create">
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <input type="hidden" asp-for="DriverProfileId" />
+    <input type="hidden" asp-for="PickupLatitude" />
+    <input type="hidden" asp-for="PickupLongitude" />
+    <input type="hidden" asp-for="DriverName" />
+    <input type="hidden" asp-for="VehicleModel" />
+    <input type="hidden" asp-for="RatePerKm" />
+
+    <div class="mb-3">
+        <label asp-for="PickupAddress" class="form-label"></label>
+        <input asp-for="PickupAddress" class="form-control" placeholder="House no, street, landmark" />
+        <span asp-validation-for="PickupAddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DropoffAddress" class="form-label"></label>
+        <input asp-for="DropoffAddress" class="form-control" placeholder="Where are you headed?" />
+        <span asp-validation-for="DropoffAddress" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Confirm booking</button>
+    <a class="btn btn-outline-secondary" asp-controller="Drivers" asp-action="Nearby" asp-route-lat="@Model.PickupLatitude" asp-route-lng="@Model.PickupLongitude">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

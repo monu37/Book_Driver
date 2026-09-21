@@ -1,0 +1,83 @@
+@model BookDriver.ViewModels.NearbySearchViewModel
+@{
+    ViewData["Title"] = "Drivers near you";
+    var hasSearched = Model.Latitude != 0 || Model.Longitude != 0;
+}
+
+<h1 class="mb-3">@ViewData["Title"]</h1>
+
+<form method="get" asp-action="Nearby" class="row g-2 align-items-end mb-4" id="searchForm">
+    <div class="col-auto">
+        <label class="form-label">Latitude</label>
+        <input class="form-control" name="lat" id="lat" value="@(hasSearched ? Model.Latitude.ToString("F6") : "")" required />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Longitude</label>
+        <input class="form-control" name="lng" id="lng" value="@(hasSearched ? Model.Longitude.ToString("F6") : "")" required />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Radius (km)</label>
+        <input class="form-control" name="radiusKm" type="number" min="1" max="100" value="@Model.RadiusKm" />
+    </div>
+    <div class="col-auto">
+        <button type="button" id="useMyLocation" class="btn btn-outline-secondary">Use my location</button>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+<p id="geoStatus" class="text-muted"></p>
+
+@if (hasSearched)
+{
+    if (!Model.Drivers.Any())
+    {
+        <div class="alert alert-info">No available drivers found within @Model.RadiusKm km. Try a larger radius.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var d in Model.Drivers)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@d.FullName</h5>
+                            <p class="card-text mb-1">@d.VehicleModel &middot; <span class="text-muted">@d.VehiclePlateNumber</span></p>
+                            <p class="card-text mb-1">₹@d.RatePerKm.ToString("0.##") / km</p>
+                            <p class="card-text"><span class="badge bg-success">@d.DistanceKm.ToString("0.0") km away</span></p>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <a class="btn btn-primary w-100"
+                               asp-controller="Bookings" asp-action="Create"
+                               asp-route-driverProfileId="@d.DriverProfileId"
+                               asp-route-lat="@Model.Latitude" asp-route-lng="@Model.Longitude">
+                                Book this driver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('useMyLocation').addEventListener('click', function () {
+            const status = document.getElementById('geoStatus');
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation is not supported by your browser.';
+                return;
+            }
+            status.textContent = 'Locating you…';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
+                status.textContent = 'Location found. Click Search.';
+            }, function () {
+                status.textContent = 'Could not get your location. Enter it manually or allow location access.';
+            });
+        });
+    </script>
+}
