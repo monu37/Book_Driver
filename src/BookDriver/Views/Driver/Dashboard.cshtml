@@ -3,7 +3,11 @@
     ViewData["Title"] = "Driver dashboard";
 }
 
-<h1 class="mb-3">Welcome, @Model.FullName</h1>
+<h1 class="mb-1">Welcome, @Model.FullName</h1>
+<p class="text-warning mb-3" title="@BookDriver.Services.RatingDisplay.Label(Model.AverageRating, Model.RatingCount)">
+    @BookDriver.Services.RatingDisplay.Stars(Model.AverageRating)
+    <span class="text-muted small">@BookDriver.Services.RatingDisplay.Label(Model.AverageRating, Model.RatingCount)</span>
+</p>
 
 <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
 
@@ -42,6 +46,16 @@
 
                 <button type="button" id="shareLocation" class="btn btn-primary">Share my current location</button>
                 <p id="locationStatus" class="text-muted mt-2"></p>
+
+                @if (Model.HasActiveRide)
+                {
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="autoTrack">
+                        <label class="form-check-label" for="autoTrack">
+                            Auto-update my location every 15s (you have a ride in progress — the customer can track you live)
+                        </label>
+                    </div>
+                }
 
                 @if (Model.PendingRequestCount > 0)
                 {
@@ -85,13 +99,14 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        document.getElementById('shareLocation').addEventListener('click', function () {
-            const status = document.getElementById('locationStatus');
+        const status = document.getElementById('locationStatus');
+
+        function pushLocation(silent) {
             if (!navigator.geolocation) {
                 status.textContent = 'Geolocation is not supported by your browser.';
                 return;
             }
-            status.textContent = 'Locating you…';
+            if (!silent) { status.textContent = 'Locating you…'; }
             navigator.geolocation.getCurrentPosition(function (pos) {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
@@ -106,7 +121,7 @@
                 }).then(function (res) {
                     if (res.ok) {
                         document.getElementById('currentLocation').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
-                        status.textContent = 'Location updated.';
+                        status.textContent = 'Location updated ' + new Date().toLocaleTimeString() + '.';
                     } else {
                         status.textContent = 'Could not update location.';
                     }
@@ -114,6 +129,22 @@
             }, function () {
                 status.textContent = 'Could not get your location. Please allow location access.';
             });
-        });
+        }
+
+        document.getElementById('shareLocation').addEventListener('click', function () { pushLocation(false); });
+
+        const autoTrack = document.getElementById('autoTrack');
+        let autoTrackTimer = null;
+        if (autoTrack) {
+            autoTrack.addEventListener('change', function () {
+                if (autoTrack.checked) {
+                    pushLocation(true);
+                    autoTrackTimer = setInterval(function () { pushLocation(true); }, 15000);
+                } else if (autoTrackTimer) {
+                    clearInterval(autoTrackTimer);
+                    autoTrackTimer = null;
+                }
+            });
+        }
     </script>
 }

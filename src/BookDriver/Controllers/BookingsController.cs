@@ -100,6 +100,11 @@ public class BookingsController : Controller
         return RedirectToAction(nameof(Mine));
     }
 
+    private static readonly BookingStatus[] TerminalStatuses =
+    {
+        BookingStatus.Completed, BookingStatus.Rejected, BookingStatus.Cancelled,
+    };
+
     [HttpGet]
     [Authorize(Roles = "Customer")]
     public async Task<IActionResult> Mine()
@@ -108,7 +113,7 @@ public class BookingsController : Controller
 
         var items = await _db.Bookings
             .Include(b => b.DriverProfile).ThenInclude(d => d!.User)
-            .Where(b => b.CustomerId == userId)
+            .Where(b => b.CustomerId == userId && !TerminalStatuses.Contains(b.Status))
             .OrderByDescending(b => b.RequestedAt)
             .Select(b => new BookingListItemViewModel
             {
@@ -124,10 +129,78 @@ public class BookingsController : Controller
                 DistanceKm = b.DistanceKm,
                 EstimatedFare = b.EstimatedFare,
                 RequestedAt = b.RequestedAt,
+                CustomerRating = b.CustomerRating,
+                CustomerRatingComment = b.CustomerRatingComment,
+                DriverRating = b.DriverRating,
+                DriverRatingComment = b.DriverRatingComment,
             })
             .ToListAsync();
 
         return View(items);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> History()
+    {
+        var userId = _userManager.GetUserId(User)!;
+
+        var items = await _db.Bookings
+            .Include(b => b.DriverProfile).ThenInclude(d => d!.User)
+            .Where(b => b.CustomerId == userId && TerminalStatuses.Contains(b.Status))
+            .OrderByDescending(b => b.RequestedAt)
+            .Select(b => new BookingListItemViewModel
+            {
+                Id = b.Id,
+                OtherPartyName = b.DriverProfile!.User!.FullName,
+                CarModel = b.CarModel,
+                CarNumber = b.CarNumber,
+                PickupAddress = b.PickupAddress,
+                DropoffAddress = b.DropoffAddress,
+                TripStartAt = b.TripStartAt,
+                EstimatedHours = b.EstimatedHours,
+                Status = b.Status,
+                DistanceKm = b.DistanceKm,
+                EstimatedFare = b.EstimatedFare,
+                RequestedAt = b.RequestedAt,
+                CustomerRating = b.CustomerRating,
+                CustomerRatingComment = b.CustomerRatingComment,
+                DriverRating = b.DriverRating,
+                DriverRatingComment = b.DriverRatingComment,
+            })
+            .ToListAsync();
+
+        return View(items);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Customer")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RateDriver(RateBookingViewModel vm)
+    {
+        var userId = _userManager.GetUserId(User)!;
+        var booking = await _db.Bookings.Include(b => b.DriverProfile)
+            .FirstOrDefaultAsync(b => b.Id == vm.BookingId && b.CustomerId == userId);
+
+        if (booking is not null && booking.Status == BookingStatus.Completed && booking.CustomerRating is null)
+        {
+            booking.CustomerRating = vm.Rating;
+            booking.CustomerRatingComment = vm.Comment;
+
+            var driver = booking.DriverProfile!;
+            var ratings = await _db.Bookings
+                .Where(b => b.DriverProfileId == driver.Id && b.CustomerRating != null)
+                .Select(b => b.CustomerRating!.Value)
+                .ToListAsync();
+            ratings.Add(vm.Rating);
+            driver.AverageRating = ratings.Average();
+            driver.RatingCount = ratings.Count;
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Thanks for rating your driver!";
+        }
+
+        return RedirectToAction(nameof(History));
     }
 
     [HttpPost]
@@ -149,6 +222,63 @@ public class BookingsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> Track(int id)
+    {
+        var userId = _userManager.GetUserId(User)!;
+        var booking = await _db.Bookings.Include(b => b.DriverProfile).ThenInclude(d => d!.User)
+            .FirstOrDefaultAsync(b => b.Id == id && b.CustomerId == userId);
+
+        if (booking is null)
+        {
+            return NotFound();
+        }
+
+        if (booking.Status != BookingStatus.Accepted && booking.Status != BookingStatus.Completed)
+        {
+            TempData["Error"] = "Tracking is only available once a driver has accepted your ride.";
+            return RedirectToAction(nameof(Mine));
+        }
+
+        var vm = new TrackBookingViewModel
+        {
+            BookingId = booking.Id,
+            DriverName = booking.DriverProfile!.User!.FullName,
+            PickupAddress = booking.PickupAddress,
+            DropoffAddress = booking.DropoffAddress,
+            Status = booking.Status,
+            DriverLatitude = booking.DriverProfile.Latitude,
+            DriverLongitude = booking.DriverProfile.Longitude,
+            PickupLatitude = booking.PickupLatitude,
+            PickupLongitude = booking.PickupLongitude,
+        };
+
+        return View(vm);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> DriverLocation(int id)
+    {
+        var userId = _userManager.GetUserId(User)!;
+        var booking = await _db.Bookings.Include(b => b.DriverProfile)
+            .FirstOrDefaultAsync(b => b.Id == id && b.CustomerId == userId);
+
+        if (booking is null || (booking.Status != BookingStatus.Accepted && booking.Status != BookingStatus.Completed))
+        {
+            return NotFound();
+        }
+
+        return Json(new
+        {
+            lat = booking.DriverProfile!.Latitude,
+            lng = booking.DriverProfile.Longitude,
+            updatedAt = booking.DriverProfile.LocationUpdatedAt,
+            status = booking.Status.ToString(),
+        });
+    }
+
+    [HttpGet]
     [Authorize(Roles = "Driver")]
     public async Task<IActionResult> Requests()
     {
@@ -161,7 +291,7 @@ public class BookingsController : Controller
 
         var items = await _db.Bookings
             .Include(b => b.Customer)
-            .Where(b => b.DriverProfileId == driverProfile.Id)
+            .Where(b => b.DriverProfileId == driverProfile.Id && !TerminalStatuses.Contains(b.Status))
             .OrderByDescending(b => b.RequestedAt)
             .Select(b => new BookingListItemViewModel
             {
@@ -177,10 +307,73 @@ public class BookingsController : Controller
                 DistanceKm = b.DistanceKm,
                 EstimatedFare = b.EstimatedFare,
                 RequestedAt = b.RequestedAt,
+                CustomerRating = b.CustomerRating,
+                CustomerRatingComment = b.CustomerRatingComment,
+                DriverRating = b.DriverRating,
+                DriverRatingComment = b.DriverRatingComment,
             })
             .ToListAsync();
 
         return View(items);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Driver")]
+    public async Task<IActionResult> DriverHistory()
+    {
+        var userId = _userManager.GetUserId(User)!;
+        var driverProfile = await _db.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+        if (driverProfile is null)
+        {
+            return RedirectToAction("Dashboard", "Driver");
+        }
+
+        var items = await _db.Bookings
+            .Include(b => b.Customer)
+            .Where(b => b.DriverProfileId == driverProfile.Id && TerminalStatuses.Contains(b.Status))
+            .OrderByDescending(b => b.RequestedAt)
+            .Select(b => new BookingListItemViewModel
+            {
+                Id = b.Id,
+                OtherPartyName = b.Customer!.FullName,
+                CarModel = b.CarModel,
+                CarNumber = b.CarNumber,
+                PickupAddress = b.PickupAddress,
+                DropoffAddress = b.DropoffAddress,
+                TripStartAt = b.TripStartAt,
+                EstimatedHours = b.EstimatedHours,
+                Status = b.Status,
+                DistanceKm = b.DistanceKm,
+                EstimatedFare = b.EstimatedFare,
+                RequestedAt = b.RequestedAt,
+                CustomerRating = b.CustomerRating,
+                CustomerRatingComment = b.CustomerRatingComment,
+                DriverRating = b.DriverRating,
+                DriverRatingComment = b.DriverRatingComment,
+            })
+            .ToListAsync();
+
+        return View(items);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Driver")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RateCustomer(RateBookingViewModel vm)
+    {
+        var userId = _userManager.GetUserId(User)!;
+        var booking = await _db.Bookings.Include(b => b.DriverProfile)
+            .FirstOrDefaultAsync(b => b.Id == vm.BookingId && b.DriverProfile!.UserId == userId);
+
+        if (booking is not null && booking.Status == BookingStatus.Completed && booking.DriverRating is null)
+        {
+            booking.DriverRating = vm.Rating;
+            booking.DriverRatingComment = vm.Comment;
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Thanks for rating your passenger!";
+        }
+
+        return RedirectToAction(nameof(DriverHistory));
     }
 
     [HttpPost]
@@ -209,7 +402,7 @@ public class BookingsController : Controller
             await _db.SaveChangesAsync();
         }
 
-        return RedirectToAction(nameof(Requests));
+        return RedirectToAction(nameof(DriverHistory));
     }
 
     private async Task<IActionResult> RespondAsync(int id, BookingStatus newStatus)

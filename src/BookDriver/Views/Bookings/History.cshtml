@@ -1,0 +1,86 @@
+@model List<BookDriver.ViewModels.BookingListItemViewModel>
+@{
+    ViewData["Title"] = "Ride history";
+}
+
+<h1 class="mb-3">@ViewData["Title"]</h1>
+<p><a asp-action="Mine">&larr; Back to active bookings</a></p>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No past rides yet.</div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Driver</th>
+                <th>Car</th>
+                <th>Pickup</th>
+                <th>Drop-off</th>
+                <th>Trip starts</th>
+                <th>Est. fare</th>
+                <th>Status</th>
+                <th>Your rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in Model)
+            {
+                <tr>
+                    <td>@b.OtherPartyName</td>
+                    <td>@b.CarModel <div class="text-muted small">@b.CarNumber</div></td>
+                    <td>@b.PickupAddress</td>
+                    <td>@b.DropoffAddress</td>
+                    <td>@b.TripStartAt.ToString("g")</td>
+                    <td>₹@b.EstimatedFare.ToString("0.##")</td>
+                    <td><span class="badge bg-@StatusBadge(b.Status)">@b.Status</span></td>
+                    <td style="min-width: 220px;">
+                        @if (b.Status == BookDriver.Models.BookingStatus.Completed)
+                        {
+                            @if (b.CustomerRating is int given)
+                            {
+                                <span class="text-warning">@BookDriver.Services.RatingDisplay.Stars(given)</span>
+                                @if (!string.IsNullOrWhiteSpace(b.CustomerRatingComment))
+                                {
+                                    <div class="text-muted small">"@b.CustomerRatingComment"</div>
+                                }
+                            }
+                            else
+                            {
+                                <form method="post" asp-action="RateDriver" class="d-flex flex-column gap-1">
+                                    <input type="hidden" name="BookingId" value="@b.Id" />
+                                    <select name="Rating" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="5">★★★★★</option>
+                                        <option value="4">★★★★☆</option>
+                                        <option value="3">★★★☆☆</option>
+                                        <option value="2">★★☆☆☆</option>
+                                        <option value="1">★☆☆☆☆</option>
+                                    </select>
+                                    <input type="text" name="Comment" class="form-control form-control-sm" placeholder="Optional comment" />
+                                    <button class="btn btn-sm btn-outline-primary">Rate driver</button>
+                                </form>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    string StatusBadge(BookDriver.Models.BookingStatus status) => status switch
+    {
+        BookDriver.Models.BookingStatus.Completed => "success",
+        BookDriver.Models.BookingStatus.Rejected => "danger",
+        BookDriver.Models.BookingStatus.Cancelled => "secondary",
+        _ => "secondary",
+    };
+}

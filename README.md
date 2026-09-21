@@ -17,11 +17,23 @@ and browser-geolocation-based "drivers near me" search.
   hours the driver is needed for; fare is estimated as rate/hour × hours.
 - Drivers see incoming requests and can accept, reject, or mark a ride
   completed.
-- Drivers have a dashboard to go online/offline, push their live location,
-  and edit their license, experience, and hourly rate.
+- Drivers have a dashboard to go online/offline, push their live location
+  (manually or auto-updating every 15s while a ride is in progress), and
+  edit their license, experience, and hourly rate.
+- **Ratings**: after a completed ride, the customer rates the driver and
+  the driver rates the customer (1–5 stars + optional comment). A driver's
+  average rating and ride count show up in nearby search and their dashboard.
+- **Ride history**: separate "active" (My bookings / Ride requests) and
+  "history" (past completed/rejected/cancelled) views for both roles.
+- **Live tracking**: while a ride is Accepted, the customer can open a live
+  map (Leaflet + OpenStreetMap) showing the driver's current location,
+  polling every 5 seconds.
+- **Profile page**: any signed-in user can edit their name and phone number;
+  email/password changes go through the existing Identity account pages.
 - Seed data creates 5 demo drivers around Delhi (`ravi.driver@bookdriver.demo`
-  … `manoj.driver@bookdriver.demo`, password `Driver@123`) so the app has
-  something to show immediately.
+  … `manoj.driver@bookdriver.demo`, password `Driver@123`) plus a demo
+  customer (`demo.customer@bookdriver.demo`, password `Customer@123`) with a
+  few completed, rated rides already in their history.
 
 ## Running locally
 
@@ -37,15 +49,19 @@ startup. Open the URL printed in the console (e.g. `http://localhost:5000`).
 ## Project layout
 
 - `Models/` — `ApplicationUser`, `DriverProfile` (license, experience, rate/hour,
-  live location), `Booking` (customer's car, trip window, fare), `BookingStatus`.
+  live location, average rating), `Booking` (customer's car, trip window, fare,
+  ratings), `BookingStatus`.
 - `Data/ApplicationDbContext.cs` — EF Core Identity + domain DbContext.
 - `Controllers/DriversController.cs` — nearby-driver search.
-- `Controllers/BookingsController.cs` — create/accept/reject/complete/cancel.
+- `Controllers/BookingsController.cs` — create/accept/reject/complete/cancel,
+  ratings, ride history, live-tracking view + JSON polling endpoint.
 - `Controllers/DriverController.cs` — driver dashboard, location & availability.
+- `Controllers/ProfileController.cs` — edit name/phone for any signed-in user.
 - `Areas/Identity/Pages/Account/Register.cshtml(.cs)` — custom registration
   with account-type selection (Customer vs Driver).
 - `Services/GeoService.cs` — Haversine distance calculation.
-- `Services/DbSeeder.cs` — role + demo driver seeding on startup.
+- `Services/RatingDisplay.cs` — star-rating formatting helper.
+- `Services/DbSeeder.cs` — role + demo driver/customer seeding on startup.
 
 ## Notes
 

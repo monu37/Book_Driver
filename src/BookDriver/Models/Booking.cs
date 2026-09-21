@@ -40,4 +40,14 @@ public class Booking
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public DateTime? RespondedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+
+    [Range(1, 5)]
+    public int? CustomerRating { get; set; }
+    [StringLength(500)]
+    public string? CustomerRatingComment { get; set; }
+
+    [Range(1, 5)]
+    public int? DriverRating { get; set; }
+    [StringLength(500)]
+    public string? DriverRatingComment { get; set; }
 }

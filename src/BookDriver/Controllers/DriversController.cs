@@ -41,6 +41,8 @@ public class DriversController : Controller
                 LicenseNumber = d.LicenseNumber,
                 YearsOfExperience = d.YearsOfExperience,
                 RatePerHour = d.RatePerHour,
+                AverageRating = d.AverageRating,
+                RatingCount = d.RatingCount,
                 DistanceKm = GeoService.DistanceKm(lat.Value, lng.Value, d.Latitude, d.Longitude),
             })
             .Where(d => d.DistanceKm <= radiusKm)

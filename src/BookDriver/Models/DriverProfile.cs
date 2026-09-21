@@ -25,5 +25,8 @@ public class DriverProfile
     public double Longitude { get; set; }
     public DateTime LocationUpdatedAt { get; set; } = DateTime.UtcNow;
 
+    public double AverageRating { get; set; }
+    public int RatingCount { get; set; }
+
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

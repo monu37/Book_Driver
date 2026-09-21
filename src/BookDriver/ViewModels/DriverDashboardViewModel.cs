@@ -24,4 +24,7 @@ public class DriverDashboardViewModel
     public DateTime LocationUpdatedAt { get; set; }
 
     public int PendingRequestCount { get; set; }
+    public double AverageRating { get; set; }
+    public int RatingCount { get; set; }
+    public bool HasActiveRide { get; set; }
 }

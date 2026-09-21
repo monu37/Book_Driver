@@ -4,6 +4,7 @@
 }
 
 <h1 class="mb-3">@ViewData["Title"]</h1>
+<p><a asp-action="History">View past rides &rarr;</a></p>
 
 @if (TempData["Success"] is string success)
 {
@@ -48,12 +49,16 @@ else
                     <td>@b.EstimatedHours.ToString("0.#")</td>
                     <td>₹@b.EstimatedFare.ToString("0.##")</td>
                     <td><span class="badge bg-@StatusBadge(b.Status)">@b.Status</span></td>
-                    <td>
+                    <td class="text-nowrap">
                         @if (b.Status == BookDriver.Models.BookingStatus.Pending)
                         {
                             <form method="post" asp-action="Cancel" asp-route-id="@b.Id" onsubmit="return confirm('Cancel this booking?');">
                                 <button class="btn btn-sm btn-outline-danger">Cancel</button>
                             </form>
+                        }
+                        else if (b.Status == BookDriver.Models.BookingStatus.Accepted)
+                        {
+                            <a class="btn btn-sm btn-primary" asp-action="Track" asp-route-id="@b.Id">Track driver</a>
                         }
                     </td>
                 </tr>

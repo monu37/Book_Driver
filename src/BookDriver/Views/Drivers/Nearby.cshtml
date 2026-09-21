@@ -45,6 +45,10 @@
                             <h5 class="card-title">@d.FullName</h5>
                             <p class="card-text mb-1">License @d.LicenseNumber &middot; <span class="text-muted">@d.YearsOfExperience yrs experience</span></p>
                             <p class="card-text mb-1">₹@d.RatePerHour.ToString("0.##") / hour</p>
+                            <p class="card-text mb-1 text-warning" title="@BookDriver.Services.RatingDisplay.Label(d.AverageRating, d.RatingCount)">
+                                @BookDriver.Services.RatingDisplay.Stars(d.AverageRating)
+                                <span class="text-muted small">@BookDriver.Services.RatingDisplay.Label(d.AverageRating, d.RatingCount)</span>
+                            </p>
                             <p class="card-text"><span class="badge bg-success">@d.DistanceKm.ToString("0.0") km away</span></p>
                         </div>
                         <div class="card-footer bg-white border-top-0">

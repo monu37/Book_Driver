@@ -1,0 +1,68 @@
+@model BookDriver.ViewModels.TrackBookingViewModel
+@{
+    ViewData["Title"] = "Track your driver";
+}
+
+<h1 class="mb-3">@ViewData["Title"]</h1>
+
+<p>
+    <strong>@Model.DriverName</strong> &middot; @Model.PickupAddress &rarr; @Model.DropoffAddress
+    &middot; <span id="statusBadge" class="badge bg-primary">@Model.Status</span>
+</p>
+
+<div id="map" style="height: 480px; border-radius: 0.375rem;"></div>
+<p id="trackStatus" class="text-muted mt-2"></p>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+@section Scripts {
+    <script>
+        const bookingId = @Model.BookingId;
+        const pickup = [@Model.PickupLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture), @Model.PickupLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)];
+        let driverPos = [@Model.DriverLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture), @Model.DriverLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)];
+
+        const map = L.map('map').setView(driverPos, 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        const pickupIcon = L.divIcon({ className: '', html: '<div style="background:#198754;width:14px;height:14px;border-radius:50%;border:2px solid white;"></div>' });
+        const driverIcon = L.divIcon({ className: '', html: '<div style="background:#0d6efd;width:18px;height:18px;border-radius:50%;border:2px solid white;"></div>' });
+
+        L.marker(pickup, { icon: pickupIcon }).addTo(map).bindPopup('Pickup point');
+        const driverMarker = L.marker(driverPos, { icon: driverIcon }).addTo(map).bindPopup('Driver');
+
+        const bounds = L.latLngBounds([pickup, driverPos]);
+        map.fitBounds(bounds, { padding: [40, 40] });
+
+        const trackStatus = document.getElementById('trackStatus');
+        const statusBadge = document.getElementById('statusBadge');
+        let pollTimer = null;
+
+        function poll() {
+            fetch('@Url.Action("DriverLocation", "Bookings")?id=' + bookingId)
+                .then(function (res) {
+                    if (!res.ok) { throw new Error('not ok'); }
+                    return res.json();
+                })
+                .then(function (data) {
+                    driverMarker.setLatLng([data.lat, data.lng]);
+                    trackStatus.textContent = 'Driver location updated ' + new Date(data.updatedAt).toLocaleTimeString();
+                    statusBadge.textContent = data.status;
+
+                    if (data.status !== 'Accepted') {
+                        trackStatus.textContent += ' — this ride has ended, live tracking stopped.';
+                        if (pollTimer) { clearInterval(pollTimer); }
+                    }
+                })
+                .catch(function () {
+                    trackStatus.textContent = 'Could not refresh driver location.';
+                });
+        }
+
+        poll();
+        pollTimer = setInterval(poll, 5000);
+    </script>
+}

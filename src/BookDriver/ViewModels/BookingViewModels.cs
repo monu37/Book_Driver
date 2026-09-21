@@ -55,4 +55,20 @@ public class BookingListItemViewModel
     public double DistanceKm { get; set; }
     public decimal EstimatedFare { get; set; }
     public DateTime RequestedAt { get; set; }
+
+    public int? CustomerRating { get; set; }
+    public string? CustomerRatingComment { get; set; }
+    public int? DriverRating { get; set; }
+    public string? DriverRatingComment { get; set; }
+}
+
+public class RateBookingViewModel
+{
+    public int BookingId { get; set; }
+
+    [Required, Range(1, 5)]
+    public int Rating { get; set; } = 5;
+
+    [StringLength(500)]
+    public string? Comment { get; set; }
 }

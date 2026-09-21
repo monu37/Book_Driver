@@ -30,6 +30,7 @@ public class DriverController : Controller
         }
 
         var pendingCount = await _db.Bookings.CountAsync(b => b.DriverProfileId == profile.Id && b.Status == BookingStatus.Pending);
+        var hasActiveRide = await _db.Bookings.AnyAsync(b => b.DriverProfileId == profile.Id && b.Status == BookingStatus.Accepted);
 
         var vm = new DriverDashboardViewModel
         {
@@ -42,6 +43,9 @@ public class DriverController : Controller
             Longitude = profile.Longitude,
             LocationUpdatedAt = profile.LocationUpdatedAt,
             PendingRequestCount = pendingCount,
+            AverageRating = profile.AverageRating,
+            RatingCount = profile.RatingCount,
+            HasActiveRide = hasActiveRide,
         };
 
         return View(vm);
@@ -64,6 +68,10 @@ public class DriverController : Controller
             vm.Latitude = profile.Latitude;
             vm.Longitude = profile.Longitude;
             vm.LocationUpdatedAt = profile.LocationUpdatedAt;
+            vm.AverageRating = profile.AverageRating;
+            vm.RatingCount = profile.RatingCount;
+            vm.PendingRequestCount = await _db.Bookings.CountAsync(b => b.DriverProfileId == profile.Id && b.Status == BookingStatus.Pending);
+            vm.HasActiveRide = await _db.Bookings.AnyAsync(b => b.DriverProfileId == profile.Id && b.Status == BookingStatus.Accepted);
             return View(nameof(Dashboard), vm);
         }
 

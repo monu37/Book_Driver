@@ -8,6 +8,8 @@ public class NearbyDriverViewModel
     public int YearsOfExperience { get; set; }
     public decimal RatePerHour { get; set; }
     public double DistanceKm { get; set; }
+    public double AverageRating { get; set; }
+    public int RatingCount { get; set; }
 }
 
 public class NearbySearchViewModel
